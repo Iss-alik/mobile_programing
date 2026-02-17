@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:bot_toast/bot_toast.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -13,13 +12,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Alim Lab5',
+      title: 'Alim Lab6',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 62, 183, 58)),
       ),
-      home: const MyHomePage(title: 'Alim Lab5'),
-      builder: BotToastInit(), //1. call BotToastInit
-      navigatorObservers: [BotToastNavigatorObserver()], //2. registered route observer
+
+      initialRoute: '/',
+      routes: {
+        '/': (context) => MyHomePage(title: "Alim Lab6"),
+        '/2': (context) => SecondScreen(),
+        '/3': (context) => ThirdScreen()
+      },
     );
   }
 }
@@ -34,78 +37,68 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
-
-  late final TabController _tabController;
-  final draw_options = ["Home", "Profile", "Settings", "Logout"];
-
-  @override 
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-
-  }
-
-  @override 
-  void dispose() {
-    super.dispose();
-    _tabController.dispose();
-  }
-
   
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext)
+  {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-        bottom: TabBar(controller: _tabController, tabs: const <Widget> [Tab(icon: Icon(Icons.list)), Tab(icon: Icon(Icons.grid_view_rounded)), 
-                      Tab(icon: Icon(Icons.card_membership))  ],),
-      ),
+      appBar: AppBar(title: Text('HomeScreen'),),
+      body: Column(
+        children: [
+          ElevatedButton(onPressed: (){Navigator.push(context, MaterialPageRoute(builder: (context) => SecondScreen()));},
+           child: Text('push')), 
 
-      body: 
-      TabBarView(
-          controller: _tabController,
-          children: [
-                  ListView(children: [for(int i =0; i<10; i++) ListTile(title:Text('Item $i'), subtitle: Text('with subtitle $i'), )]), 
-                  
-                  GridView.count(crossAxisCount: 3, crossAxisSpacing: 10, mainAxisSpacing: 10, primary: false, padding: EdgeInsets.all(40),
-                                  children: [for(int i=1; i<7; i++) Container(padding: EdgeInsets.all(4), color: Colors.teal[100*i], child: Text('$i'),)],),
-                  
-                  Column(mainAxisAlignment: MainAxisAlignment.center, 
-                        children: [Card(child: _SampleCard(cardName: "Elevated Card"),), 
-                                  Card.filled(child: _SampleCard(cardName: "Filled Card"),),
-                                  Card.outlined(child: _SampleCard(cardName: "Outlined Card"),)
-                                  ], 
-                        
-                        ),
-                  ]
-      ),
+          ElevatedButton(onPressed: (){Navigator.pushNamed(context, "/2");}, child: Text('pushNamed')), 
 
-      drawer: Drawer(
-        child: ListView(
-          children: [ for(int i=0; i<4; i++) ListTile(title: Text(draw_options[i]),
-                    onTap: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('This is a ${draw_options[i]} !'),
-                        duration: Duration(seconds: 2),));
-                    },
-          )],
-        )
+          ElevatedButton(onPressed: (){Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SecondScreen()));}, 
+          child: Text('pushReplacmnet')), 
+
+          ElevatedButton(onPressed: (){Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SecondScreen()), (route) => false);}, 
+          child: Text('push and remove until')),  
+
+          ElevatedButton(onPressed: (){Navigator.pushNamedAndRemoveUntil(context, '/2', (route) => false);}, 
+          child: Text('pushNeamd And remove Until')), 
+
+          ],
+
       ),
     );
   }
 }
 
 
-class _SampleCard extends StatelessWidget {
-  const _SampleCard({required this.cardName});
-  final String cardName;
-  
+class SecondScreen extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
-    return InkWell(splashColor: Colors.blueGrey, onTap: () { BotToast.showText(text: "Card $cardName was clicked");}, 
-                  child: SizedBox(width: 200, height: 100, child: Center(child: Text(cardName))),);
-  }
+    return Scaffold(
+      appBar: AppBar(title: Text('SecondScreen'),),
+      body: Column(
+        children: [
+          ElevatedButton(onPressed: (){Navigator.pop(context);},
+           child: Text('pop')), 
 
+          ElevatedButton(onPressed: (){Navigator.popAndPushNamed(context, "/3");}, child: Text('pop and pushNamed')), 
+
+          ],
+
+      ),
+    );
+  }
+}
+
+
+class ThirdScreen extends StatelessWidget{
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('ThirdScreen'),),
+      body: Column(
+        children: [
+          ElevatedButton(onPressed: (){Navigator.pop(context);},
+           child: Text('pop to prevous')), 
+          ],
+
+      ),
+    );
+  }
 }
