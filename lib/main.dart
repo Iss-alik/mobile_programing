@@ -19,9 +19,8 @@ class MyApp extends StatelessWidget {
 
       initialRoute: '/',
       routes: {
-        '/': (context) => MyHomePage(title: "Alim Lab6"),
-        '/2': (context) => SecondScreen(),
-        '/3': (context) => ThirdScreen()
+        '/': (context) => MyHomePage(title: "Alim Lab7"),
+        '/profile': (context) => UserInfo(),
       },
     );
   }
@@ -36,42 +35,44 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
+class _MyHomePageState extends State<MyHomePage>{
   
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext)
   {
     return Scaffold(
-      appBar: AppBar(title: Text('HomeScreen'),),
-      body: Column(
-        children: [
-          ElevatedButton(onPressed: (){Navigator.push(context, MaterialPageRoute(builder: (context) => SecondScreen()));},
-           child: Text('push')), 
+      appBar: AppBar(title: Text('RegistarionScreen'),),
+      body: Form(
+        key: _formKey, 
+        child: Column(
+          children: [
+            InputField(),
 
-          ElevatedButton(onPressed: (){Navigator.pushNamed(context, "/2");}, child: Text('pushNamed')), 
-
-          ElevatedButton(onPressed: (){Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SecondScreen()));}, 
-          child: Text('pushReplacmnet')), 
-
-          ElevatedButton(onPressed: (){Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SecondScreen()), (route) => false);}, 
-          child: Text('push and remove until')),  
-
-          ElevatedButton(onPressed: (){Navigator.pushNamedAndRemoveUntil(context, '/2', (route) => false);}, 
-          child: Text('pushNeamd And remove Until')), 
-
+            ElevatedButton(onPressed: (){
+                if (_formKey.currentState!.validate()) 
+                {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Processing Data')),
+                  );
+                }
+              }, 
+              child: Text("Submit form"))
           ],
-
-      ),
+        ),
+        
+      )
     );
   }
 }
 
 
-class SecondScreen extends StatelessWidget{
+class UserInfo extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('SecondScreen'),),
+      appBar: AppBar(title: Text('UserInfo'),),
       body: Column(
         children: [
           ElevatedButton(onPressed: (){Navigator.pop(context);},
@@ -87,18 +88,28 @@ class SecondScreen extends StatelessWidget{
 }
 
 
-class ThirdScreen extends StatelessWidget{
+class InputField extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('ThirdScreen'),),
-      body: Column(
-        children: [
-          ElevatedButton(onPressed: (){Navigator.pop(context);},
-           child: Text('pop to prevous')), 
-          ],
+    return  Padding
+            ( padding: EdgeInsets.all(20),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+                  labelText: 'FullName',
+                  prefixIcon: Icon(Icons.person)
+                ),
+                validator: (value)
+                {
+                  if( value == null || value.isEmpty)
+                  {
+                    return "Name can't be empty";
+                  }
 
-      ),
-    );
+                  return null;
+                },
+              ),
+            );
+
   }
 }
