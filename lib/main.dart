@@ -39,6 +39,35 @@ class _MyHomePageState extends State<MyHomePage>{
   
   final _formKey = GlobalKey<FormState>();
 
+  String? not_empty(String? value){
+    if( value == null || value.isEmpty)
+    {
+        return "This filed can't be empty";
+    }
+
+    return null;
+  }
+
+  String? min_length(String? value)
+  {
+    int length = 8;
+    if( value !=null && value.length < length)
+    {
+        return "This filed too short";
+    }
+
+    return null;
+  }
+
+  String? only_digits(String? value)
+  {
+    if (value!=null && int.tryParse(value) == null) {
+      return "Only digits allowed";
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext)
   {
@@ -48,7 +77,27 @@ class _MyHomePageState extends State<MyHomePage>{
         key: _formKey, 
         child: Column(
           children: [
-            InputField(),
+            InputField([not_empty, min_length],
+            'FullName',
+            Icon(Icons.person),
+            null,
+            ),
+
+            InputField([not_empty, only_digits], 
+            "Phone number", 
+            Icon(Icons.phone),  
+            null, 
+            helper: "Phone format (XXX)XXX-XXXX",
+            ),
+
+            InputField([], "Life Story", null, null, 
+            helper: "keep it short it is just demo", maxlines: 5, minlines: 3,
+            ),
+
+            InputField([not_empty, min_length], "Password", Icon(Icons.shield), null,
+            OutlineBorder: false,
+            password_mod: true,
+            ),
 
             ElevatedButton(onPressed: (){
                 if (_formKey.currentState!.validate()) 
@@ -88,26 +137,71 @@ class UserInfo extends StatelessWidget{
 }
 
 
-class InputField extends StatelessWidget{
+
+
+class InputField extends StatefulWidget {
+
+  List <String? Function(String?)> validation_funcs;
+  String? label;
+  Icon? icon;
+  TextEditingController? controller;
+  String? helper;
+  int maxlines; int minlines;
+  bool OutlineBorder;
+  bool password_mod;
+  
+
+  InputField(
+    this.validation_funcs,
+    this.label,
+    this.icon,
+    this.controller,
+    {this.helper, this.maxlines = 1, this.minlines = 1, 
+    this.OutlineBorder = true, this.password_mod = false}
+    );
+
+  @override
+  State<InputField> createState() => _InputFieldState();
+}
+
+class _InputFieldState extends State<InputField> {
+
+  String? _validate(String? value) 
+  {
+      for ( final validator in widget.validation_funcs) {
+        final result = validator(value);
+        if (result != null) return result;
+      }
+      return null;
+
+  }
+
+  bool obscure = true;
+  
+
   @override
   Widget build(BuildContext context) {
+
     return  Padding
             ( padding: EdgeInsets.all(20),
               child: TextFormField(
+                obscureText: widget.password_mod? obscure: false,
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
-                  labelText: 'FullName',
-                  prefixIcon: Icon(Icons.person)
-                ),
-                validator: (value)
-                {
-                  if( value == null || value.isEmpty)
-                  {
-                    return "Name can't be empty";
-                  }
+                  border: widget.OutlineBorder? OutlineInputBorder(borderRadius: BorderRadius.circular(20)) : null,
+                  labelText: widget.label,
+                  prefixIcon: widget.icon,
+                  helperText: widget.helper,
 
-                  return null;
-                },
+                  suffixIcon: widget.password_mod? IconButton(onPressed: (){
+                    setState(() {
+                      obscure = !obscure;
+                    }); 
+                    }, icon: Icon(obscure? Icons.visibility : Icons.visibility_off) ) 
+                    : null
+                ),
+                validator: _validate, 
+                maxLines: widget.maxlines,
+                minLines: widget.minlines,
               ),
             );
 
