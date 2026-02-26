@@ -19,8 +19,7 @@ class MyApp extends StatelessWidget {
 
       initialRoute: '/',
       routes: {
-        '/': (context) => MyHomePage(title: "Alim Lab7"),
-        '/profile': (context) => UserInfo(),
+        '/': (context) => MyHomePage(title: "Alim Lab7")
       },
     );
   }
@@ -36,8 +35,34 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage>{
-  
+
+  String? name;
+  String? email;
+  String? phone;
+  String? story;
+  String? password;  
+
   final _formKey = GlobalKey<FormState>();
+  final password_controller = TextEditingController();
+
+  final _emailFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+   final _passwordConfirmFocus = FocusNode();
+  final _nameFocus = FocusNode();
+  final _phoneFocus = FocusNode();
+  final _storyFocus = FocusNode();
+
+  @override
+  void dispose() {
+    password_controller.dispose();
+    _emailFocus.dispose();
+    _passwordConfirmFocus.dispose();
+    _passwordFocus.dispose();
+    _nameFocus.dispose();
+    _phoneFocus.dispose();
+    _storyFocus.dispose();
+    super.dispose();
+  }
 
   String? not_empty(String? value){
     if( value == null || value.isEmpty)
@@ -68,6 +93,27 @@ class _MyHomePageState extends State<MyHomePage>{
     return null;
   }
 
+  String? validateEmail(String? value) {
+    final emailRegex = RegExp(
+      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+    );
+
+    if (value != null && !emailRegex.hasMatch(value)) {
+      return 'Not correct format of email';
+    }
+
+    return null; 
+  }
+
+  String? password_match(String? value)
+  {
+    if(value != null && value != password_controller.text)
+    {  return "Passwords are not same";}
+    
+    return null;
+  }
+
+
   @override
   Widget build(BuildContext)
   {
@@ -80,30 +126,66 @@ class _MyHomePageState extends State<MyHomePage>{
             InputField([not_empty, min_length],
             'FullName',
             Icon(Icons.person),
-            null,
+            (value) => name = value,
+            focusNode: _nameFocus,
+            onFieldSubmitted:  (_) => FocusScope.of(context).requestFocus(_phoneFocus),
             ),
 
             InputField([not_empty, only_digits], 
             "Phone number", 
             Icon(Icons.phone),  
-            null, 
+            (value) => phone = value, 
             helper: "Phone format (XXX)XXX-XXXX",
+            focusNode: _phoneFocus,
+            onFieldSubmitted:  (_) => FocusScope.of(context).requestFocus(_emailFocus),
             ),
 
-            InputField([], "Life Story", null, null, 
+            InputField([not_empty, validateEmail], "Email", Icon(Icons.email), 
+            (value) => email = value,
+            OutlineBorder: false,
+            focusNode: _emailFocus,
+            onFieldSubmitted:  (_) => FocusScope.of(context).requestFocus(_storyFocus),
+            ),
+
+            InputField([], "Life Story", null, 
+            (value) => story = value, 
             helper: "keep it short it is just demo", maxlines: 5, minlines: 3,
+            focusNode: _storyFocus,
+            onFieldSubmitted:  (_) => FocusScope.of(context).requestFocus(_passwordFocus),
             ),
 
-            InputField([not_empty, min_length], "Password", Icon(Icons.shield), null,
+            InputField([not_empty, min_length], "Password", Icon(Icons.shield), 
+            (value) => password = value,
             OutlineBorder: false,
             password_mod: true,
+            controller: password_controller,
+            focusNode: _passwordFocus,
+            onFieldSubmitted:  (_) => FocusScope.of(context).requestFocus(_passwordConfirmFocus),
             ),
 
-            ElevatedButton(onPressed: (){
+            InputField([not_empty, min_length, password_match], "Confirm Password", Icon(Icons.draw), null,
+            OutlineBorder: false,
+            password_mod: true,
+            focusNode: _passwordConfirmFocus,
+            onFieldSubmitted:  (_) => FocusScope.of(context).requestFocus(_nameFocus),
+            ),
+
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.lightGreen,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                ),
+              onPressed: (){
                 if (_formKey.currentState!.validate()) 
                 {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Processing Data')),
+                  _formKey.currentState!.save(); 
+
+                  Navigator.push(context, 
+                    MaterialPageRoute(
+                      builder: (context) => UserInfo(email: email!, name: name!, password: password!, phone: phone!, story: story!,)
+                    )
+                  
                   );
                 }
               }, 
@@ -118,17 +200,34 @@ class _MyHomePageState extends State<MyHomePage>{
 
 
 class UserInfo extends StatelessWidget{
+
+  final String email;
+  final String name;
+  final String phone;
+  final String story;
+  final String password;  
+
+  
+
+  const UserInfo({
+    required this.email,
+    required this.name,
+    required this.phone,
+    required this.story,
+    required this.password,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('UserInfo'),),
       body: Column(
         children: [
-          ElevatedButton(onPressed: (){Navigator.pop(context);},
-           child: Text('pop')), 
-
-          ElevatedButton(onPressed: (){Navigator.popAndPushNamed(context, "/3");}, child: Text('pop and pushNamed')), 
-
+          Text("Full Name: $name"),
+          Text("Phone Number: $phone"),
+          Text("Life story: $story"),
+          Text("Email: $email"),
+          Text("Password: $password"),
           ],
 
       ),
@@ -149,15 +248,20 @@ class InputField extends StatefulWidget {
   int maxlines; int minlines;
   bool OutlineBorder;
   bool password_mod;
+  void Function(String?)? save_var;
   
+  final FocusNode focusNode;
+  final void Function(String)? onFieldSubmitted;
 
   InputField(
     this.validation_funcs,
     this.label,
     this.icon,
-    this.controller,
+    this.save_var,
     {this.helper, this.maxlines = 1, this.minlines = 1, 
-    this.OutlineBorder = true, this.password_mod = false}
+    this.OutlineBorder = true, this.password_mod = false,
+    this.controller,
+    required this.onFieldSubmitted, required this.focusNode}
     );
 
   @override
@@ -183,7 +287,7 @@ class _InputFieldState extends State<InputField> {
   Widget build(BuildContext context) {
 
     return  Padding
-            ( padding: EdgeInsets.all(20),
+            ( padding: EdgeInsets.all(10),
               child: TextFormField(
                 obscureText: widget.password_mod? obscure: false,
                 decoration: InputDecoration(
@@ -202,6 +306,10 @@ class _InputFieldState extends State<InputField> {
                 validator: _validate, 
                 maxLines: widget.maxlines,
                 minLines: widget.minlines,
+                controller: widget.controller,
+                onSaved: widget.save_var,
+                focusNode: widget.focusNode,
+                onFieldSubmitted: widget.onFieldSubmitted
               ),
             );
 
