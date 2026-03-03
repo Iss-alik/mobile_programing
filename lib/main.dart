@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_3/constants/colors.dart';
+import 'package:flutter_application_3/constants/text_styles.dart';
+import 'package:easy_localization/easy_localization.dart';
+
 
 class StandardTextContainer extends Container {
   StandardTextContainer(String text, {super.key})
@@ -10,8 +14,18 @@ class StandardTextContainer extends Container {
         );
 }
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
+  
+  runApp(
+    EasyLocalization(
+      supportedLocales: [Locale('en'), Locale('ru')],
+      path: 'assets/translations', 
+      fallbackLocale: Locale('en'),
+      child: MyApp()
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -21,52 +35,63 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Alim Lab 3: Layout Basics',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.grey),
-        scaffoldBackgroundColor: Colors.grey[300],
-      ),
-      home: const MyHomePage(title: 'Alim Lab 3: Layout Basics'),
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({super.key});
 
-  final String title;
 
   @override 
   Widget build(BuildContext context)
   {
     return Scaffold(
       appBar: AppBar( 
-      title: Text(title, 
-              style: TextStyle(
-                fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold, 
-              )
-            ), 
-      backgroundColor: Colors.teal,),
+      actions: [TextButton(
+                  child: Text('cahnge_lang', style: AppTextStyles.px10Accent,).tr(),
+                  onPressed:() async
+                  {
+                    if(context.locale == Locale('ru'))
+                    {
+                      await context.setLocale(Locale('en'));
+                    }
+                    else
+                    {await context.setLocale(Locale('ru'));}
+                  }
+                )
+            ],
+      title: Text('app_title', style: AppTextStyles.px12HeadBlack).tr(), 
+      backgroundColor: AppColors.main,),
+      
+      
       body: Column(children: 
         [Container
-                  (child: Text("Welcome to Flutter", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold), textAlign: TextAlign.center,), 
+                  ( 
                    padding: const EdgeInsets.all(16),
                    decoration: BoxDecoration( 
-                                              color: Colors.blue,
+                                              color: AppColors.main,
                                               borderRadius: BorderRadius.circular(12), 
-                                              boxShadow:  [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 6, offset: Offset(2,2) )] 
+                                              boxShadow:  [BoxShadow(color: AppColors.secondary, blurRadius: 6, offset: Offset(2,2) )] 
                                             ),
+                    child: Text('hello_text', style: AppTextStyles.px12HeadBlack, textAlign: TextAlign.center,).tr(),
                   ),
                 const SizedBox(height: 16),
                 Container
-                  (child: Row(  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [Text("Left text", style: TextStyle(fontSize: 16, color: Colors.white) ), Text("Rigth text", style: TextStyle(fontSize: 16, color: Colors.white) ) ],), 
+                  (
                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20) ,
                    decoration: BoxDecoration( 
-                                              color: Colors.green,
+                                              color: AppColors.main,
                                               borderRadius: BorderRadius.circular(8), 
-                                              border: Border.all(color: Colors.white, width: 2)
+                                              border: Border.all(color: AppColors.secondary, width: 2)
                                             ),
+                    child: Row(  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [Text("left_text", style: AppTextStyles.px10Accent ).tr(), 
+                              Text("right_text", style: AppTextStyles.px10Accent).tr() ],), 
                   ),], )
     );
   }
