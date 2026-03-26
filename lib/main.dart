@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_3/screens/registration_screen.dart';
+import 'package:flutter_application_3/screens/main_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/auth_bloc.dart';
+import 'blocs/auth/auth_bloc.dart';
 import '../repositories/auth_repo.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
         ),
         initialRoute: '/',
         routes: {
-          '/': (context) => RegistrationPage(title: "Alim Lab9"),
+          '/': (context) => MyHomePage(title: "Alim Lab9"),
         },
       ),
     );

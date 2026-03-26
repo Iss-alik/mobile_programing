@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import '../utils/validations.dart';
 import '../widgets/input_filed.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/auth_bloc.dart';
-import '../blocs/auth_state.dart';
-import '../blocs/auth_event.dart';
+import '../blocs/auth/auth_bloc.dart';
+import '../blocs/auth/auth_state.dart';
+import '../blocs/auth/auth_event.dart';
 import 'main_screen.dart';
 
 class RegistrationPage extends StatefulWidget {
